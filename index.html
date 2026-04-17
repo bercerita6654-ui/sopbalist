@@ -105,9 +105,9 @@
         </nav>
 
         <div class="p-4 border-t flex flex-col gap-2">
-            <!-- Tombol Tambah Data Bebas (Hanya untuk Server) -->
+            <!-- Tombol Tambah Menu Bebas (Hanya untuk Server) -->
             <button id="btn-add-data" onclick="openAddModal()" class="hidden w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center gap-2 text-sm font-bold shadow-md shadow-blue-200 mb-2">
-                <i class="fas fa-plus-circle"></i> Tambah Kategori Baru
+                <i class="fas fa-folder-plus"></i> Tambah Menu Baru
             </button>
 
             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
@@ -134,7 +134,6 @@
                     <h2 class="text-3xl font-bold text-gray-800 rich-text" id="page-title">Loading...</h2>
                     <span id="server-badge" class="hidden px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full border border-purple-200"><i class="fas fa-shield-alt"></i> Edit Mode (Server)</span>
                 </div>
-                <!-- Menggunakan div agar tag HTML internal bisa dibaca bersih -->
                 <div class="text-gray-500 mt-2 rich-text" id="page-desc">Menyiapkan data dari Spreadsheet.</div>
             </div>
             <div class="text-right">
@@ -155,7 +154,6 @@
 
     <!-- Modal untuk Zoom & Panning Gambar -->
     <div id="image-modal" class="fixed inset-0 z-[100] hidden bg-black bg-opacity-95 flex items-center justify-center backdrop-blur-sm transition-opacity">
-        <!-- Control Bar -->
         <div class="absolute top-4 right-6 flex gap-3 z-[110] bg-gray-900 bg-opacity-50 p-2 rounded-full backdrop-blur-md border border-gray-700">
             <button onclick="zoomImage(0.25)" class="text-white hover:text-blue-400 w-10 h-10 rounded-full flex items-center justify-center transition" title="Zoom In (Scroll Up)"><i class="fas fa-search-plus text-xl"></i></button>
             <button onclick="zoomImage(-0.25)" class="text-white hover:text-blue-400 w-10 h-10 rounded-full flex items-center justify-center transition" title="Zoom Out (Scroll Down)"><i class="fas fa-search-minus text-xl"></i></button>
@@ -164,12 +162,10 @@
             <button onclick="closeModal()" class="text-white hover:text-red-400 w-10 h-10 rounded-full flex items-center justify-center transition" title="Tutup Modal"><i class="fas fa-times text-2xl font-bold"></i></button>
         </div>
 
-        <!-- Instruksi Layar -->
         <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-[110] bg-gray-900 bg-opacity-60 text-white text-xs px-4 py-2 rounded-full backdrop-blur-md pointer-events-none tracking-wide text-center">
             <i class="fas fa-mouse pointer-events-none mr-1"></i> Scroll untuk Zoom | Tarik (Drag) untuk Geser Gambar
         </div>
 
-        <!-- Image Container -->
         <div id="image-container" class="w-full h-full flex items-center justify-center overflow-hidden">
             <img id="modal-img" class="max-w-none shadow-2xl select-none" style="max-height: 90vh;" src="" alt="Zoomed Image" draggable="false">
         </div>
@@ -179,7 +175,6 @@
     <div id="form-modal" class="fixed inset-0 z-[150] hidden bg-gray-900 bg-opacity-70 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[95vh] flex flex-col overflow-hidden relative">
             
-            <!-- Loading Overlay saat Submit -->
             <div id="form-saving" class="hidden absolute inset-0 bg-white bg-opacity-90 z-10 flex flex-col items-center justify-center">
                 <div class="loader mb-4"></div>
                 <p class="font-bold text-gray-700">Menyimpan ke Spreadsheet...</p>
@@ -188,7 +183,7 @@
 
             <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
                 <h3 id="form-modal-title" class="text-lg font-bold text-gray-800">Tambah Data SOP</h3>
-                <button onclick="closeDataModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                <button type="button" onclick="closeDataModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
             
             <form id="data-form" onsubmit="submitDataForm(event)" class="p-6 overflow-y-auto flex-1 space-y-4">
@@ -197,22 +192,33 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kategori (Tab ID) *</label>
-                        <input type="text" id="form-kategori" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium text-blue-700" placeholder="contoh: persiapan">
-                        <p class="text-[10px] text-gray-500 mt-1">Nama tab tempat data ini bernaung.</p>
-                    </div>
-                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Tipe Kotak *</label>
-                        <select id="form-tipe" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="menu">Tab Menu Baru (Sidebar)</option>
-                            <option value="title">Judul Pemisah</option>
-                            <option value="info">Kotak Info Kuning</option>
-                            <option value="card">Kotak Deskripsi (Card)</option>
-                            <option value="step">Langkah Berurutan (Step)</option>
-                            <option value="checklist" selected>Checklist Harian</option>
-                            <option value="kpicard">Kotak KPI Target</option>
+                        <select id="form-tipe" required onchange="handleTipeChange()" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="menu" class="font-bold">📄 Tab Menu Baru (Biasa)</option>
+                            <option value="grupmenu" class="font-bold text-blue-600">📁 Grup / Folder Sidebar</option>
+                            <option disabled>───────────────</option>
+                            <option value="title">Teks: Judul Pemisah</option>
+                            <option value="info">Kotak: Info Kuning</option>
+                            <option value="card">Kotak: Deskripsi (Card)</option>
+                            <option value="step">Langkah: Berurutan (Step)</option>
+                            <option value="checklist" selected>Tugas: Checklist Harian</option>
+                            <option value="kpicard">Target: Kotak KPI</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kategori / ID Tab *</label>
+                        <input type="text" id="form-kategori" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium text-blue-700" placeholder="contoh: persiapan">
+                        <p class="text-[10px] text-gray-500 mt-1">Gunakan kata tunggal (otomatis ditambahkan grup jika dipilih).</p>
+                    </div>
+                </div>
+                
+                <!-- Opsi Grup Submenu -->
+                <div id="wrapper-grup" class="bg-blue-50 p-3 rounded-lg border border-blue-100 hidden">
+                    <label class="block text-sm font-semibold text-blue-800 mb-1"><i class="fas fa-sitemap"></i> Masukkan ke dalam Grup Menu (Opsional)</label>
+                    <select id="form-grup" class="w-full p-2.5 bg-white border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Berdiri Sendiri (Menu Utama) --</option>
+                        <!-- Pilihan Grup Di-load Otomatis -->
+                    </select>
                 </div>
 
                 <div>
@@ -225,8 +231,6 @@
                     
                     <!-- EDITOR WYSIWYG -->
                     <div class="border border-gray-300 rounded-lg overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition shadow-sm">
-                        
-                        <!-- Toolbar -->
                         <div class="bg-gray-100 border-b border-gray-300 flex flex-wrap gap-1 p-2 items-center text-gray-700 text-sm">
                             <button type="button" onmousedown="event.preventDefault(); formatText('bold')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Bold"><i class="fas fa-bold"></i></button>
                             <button type="button" onmousedown="event.preventDefault(); formatText('italic')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Italic"><i class="fas fa-italic"></i></button>
@@ -285,8 +289,6 @@
                                 <option value="•">• Bullet Kecil</option>
                             </select>
                         </div>
-                        
-                        <!-- Area Ketik ContentEditable -->
                         <div id="form-deskripsi" contenteditable="true" data-placeholder="Ketik keterangan lengkap di sini..." class="w-full p-4 bg-gray-50 min-h-[120px] max-h-[300px] overflow-y-auto outline-none rich-text text-gray-800"></div>
                     </div>
                 </div>
@@ -326,8 +328,7 @@
         window.appData = [];
         let currentUserRole = localStorage.getItem('sopUserRole') || null;
 
-        // PENGAMAN DATA: Fungsi untuk membaca kode mentah dari Server (Apps Script) 
-        // dan mengembalikannya menjadi bentuk tag visual HTML yang asli.
+        // PENGAMAN DATA: Membaca tag HTML mentah dari Server
         function decodeEntities(encodedString) {
             if (!encodedString) return '';
             var textArea = document.createElement('textarea');
@@ -337,12 +338,11 @@
 
         // Data Simulasi (Jika API Gagal)
         const dummyData = [
-            { Kategori: 'persiapan', Tipe: 'menu', Judul: 'Data Induk', Deskripsi: 'Informasi dasar operasional dari Spreadsheet.', Ikon: 'fas fa-database', Media: '' },
-            { Kategori: 'persiapan', Tipe: 'info', Judul: 'Aturan Dasar', Deskripsi: 'Jam Operasional <b>08:00 - 17:00</b>.<br>Cutoff jam 15:00.', Ikon: 'fas fa-exclamation-triangle', Media: '' },
-            { Kategori: 'persiapan', Tipe: 'title', Judul: 'Informasi Penting', Deskripsi: 'Berikut hal-hal yang perlu dipersiapkan.', Ikon: 'fas fa-bullhorn text-blue-500', Media: '' },
-            { Kategori: 'persiapan', Tipe: 'card', Judul: 'Master Data Produk', Deskripsi: 'Pahami SKU, nama varian, dan letak fisik barang.', Ikon: 'fas fa-box text-orange-500', Media: '' },
-            { Kategori: 'pagi', Tipe: 'menu', Judul: 'Aktivitas Pagi', Deskripsi: 'Rutinitas harian saat membuka toko.', Ikon: 'fas fa-sun', Media: '' },
-            { Kategori: 'pagi', Tipe: 'checklist', Judul: 'Absensi & Login', Deskripsi: 'Buka semua tab marketplace.', Ikon: '', Media: '' }
+            { Kategori: 'ops', Tipe: 'grupmenu', Judul: 'Operasional', Deskripsi: '', Ikon: 'fas fa-briefcase', Media: '' },
+            { Kategori: 'ops::pagi', Tipe: 'menu', Judul: 'Aktivitas Pagi', Deskripsi: 'Rutinitas harian saat membuka toko.', Ikon: 'fas fa-sun text-yellow-500', Media: '' },
+            { Kategori: 'ops::pagi', Tipe: 'checklist', Judul: 'Absensi & Login', Deskripsi: 'Buka semua tab marketplace.', Ikon: '', Media: '' },
+            { Kategori: 'ops::pesanan', Tipe: 'menu', Judul: 'Pesanan Masuk', Deskripsi: 'Cetak resi.', Ikon: 'fas fa-box text-orange-500', Media: '' },
+            { Kategori: 'persiapan', Tipe: 'menu', Judul: 'Data Induk', Deskripsi: 'Informasi dasar.', Ikon: 'fas fa-database', Media: '' },
         ];
 
         // --- SISTEM AUTENTIKASI ---
@@ -444,7 +444,6 @@
             applyImageTransform();
         }
 
-        // Logika Panning (Geser dengan Mouse)
         imgContainer.addEventListener('mousedown', (e) => {
             if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') {
                 e.preventDefault();
@@ -454,9 +453,7 @@
             }
         });
 
-        window.addEventListener('mouseup', () => {
-            isPanning = false;
-        });
+        window.addEventListener('mouseup', () => { isPanning = false; });
 
         window.addEventListener('mousemove', (e) => {
             if (!isPanning) return;
@@ -466,7 +463,6 @@
             applyImageTransform();
         });
 
-        // Logika Panning (Geser dengan Sentuhan Mobile)
         imgContainer.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1 && e.target.tagName !== 'BUTTON') {
                 isPanning = true;
@@ -475,9 +471,7 @@
             }
         }, {passive: false});
 
-        window.addEventListener('touchend', () => {
-            isPanning = false;
-        });
+        window.addEventListener('touchend', () => { isPanning = false; });
 
         window.addEventListener('touchmove', (e) => {
             if (!isPanning) return;
@@ -487,18 +481,15 @@
             applyImageTransform();
         }, {passive: false});
 
-        // Logika Zoom dengan Mouse Scroll (Wheel)
         imgContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
             const delta = e.deltaY < 0 ? 0.15 : -0.15;
             zoomImage(delta);
         }, {passive: false});
 
-        // Menutup modal jika area kosong ditekan (bukan gambar atau tombol)
         imgContainer.addEventListener('click', (e) => {
             if(e.target === imgContainer) closeModal();
         });
-
 
         function handleImageError(imgEl, originalUrl) {
             const parent = imgEl.parentElement;
@@ -506,20 +497,64 @@
             <p class="text-xs text-gray-500 mt-2 whitespace-pre-wrap">Gambar gagal dimuat. Pastikan akses diset "Siapa saja yang memiliki tautan".</p>`;
         }
 
+        // --- SISTEM TATA KELOLA FORM & GRUP ---
+        function populateGroupSelect() {
+            let select = document.getElementById('form-grup');
+            select.innerHTML = '<option value="">-- Berdiri Sendiri (Menu Utama) --</option>';
+            
+            let groups = window.appData.filter(row => row.Tipe && row.Tipe.toLowerCase().trim() === 'grupmenu');
+            let uniqueGroups = [...new Set(groups.map(g => g.Kategori.toLowerCase().trim()))];
+            
+            uniqueGroups.forEach(g => {
+                let gRow = groups.find(x => x.Kategori.toLowerCase().trim() === g);
+                let title = stripHtmlLocal(decodeEntities(gRow.Judul));
+                select.innerHTML += `<option value="${g}">📁 ${title} (ID: ${g})</option>`;
+            });
+        }
+
+        function handleTipeChange() {
+            let tipe = document.getElementById('form-tipe').value;
+            let wrapper = document.getElementById('wrapper-grup');
+            
+            if (tipe === 'grupmenu') {
+                wrapper.classList.add('hidden');
+                document.getElementById('form-grup').value = '';
+            } else {
+                wrapper.classList.remove('hidden');
+            }
+        }
+
+        const stripHtmlLocal = (html) => {
+            let tmp = document.createElement("DIV");
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || "";
+        };
+
         // --- SISTEM CRUD & API ---
-        function openAddModal(prefillKategori = '') {
+        function openAddModal(prefillKategoriLengkap = '') {
             document.getElementById('form-action').value = 'add';
             document.getElementById('form-rowindex').value = '';
             document.getElementById('data-form').reset();
             document.getElementById('form-deskripsi').innerHTML = '';
             document.getElementById('form-modal-title').innerText = 'Tambah Data SOP';
             
-            if (prefillKategori) {
-                document.getElementById('form-kategori').value = prefillKategori;
-                // Kosongkan tipe tab menu jika dia menambah data ke tab yang sudah ada
-                document.getElementById('form-tipe').value = 'checklist';
+            populateGroupSelect();
+            
+            if (prefillKategoriLengkap) {
+                let parts = prefillKategoriLengkap.split('::');
+                if (parts.length > 1) {
+                    document.getElementById('form-grup').value = parts[0].trim();
+                    document.getElementById('form-kategori').value = parts[1].trim();
+                } else {
+                    document.getElementById('form-grup').value = '';
+                    document.getElementById('form-kategori').value = prefillKategoriLengkap;
+                }
+                document.getElementById('form-tipe').value = 'checklist'; // Default untuk tombol bawah
+            } else {
+                document.getElementById('form-tipe').value = 'menu'; // Default untuk tombol sidebar
             }
-
+            
+            handleTipeChange();
             document.getElementById('form-modal').classList.remove('hidden');
         }
 
@@ -530,29 +565,33 @@
             document.getElementById('form-action').value = 'edit';
             document.getElementById('form-rowindex').value = rowIndex;
             
-            // PENGAMAN DATA: Memastikan tag HTML tidak terbuang/kacau saat masuk form edit
-            const stripHtml = (html) => {
-                let tmp = document.createElement("DIV");
-                tmp.innerHTML = decodeEntities(html); // Decode tag agar tidak bocor
-                return tmp.textContent || tmp.innerText || "";
-            };
+            populateGroupSelect();
 
-            document.getElementById('form-kategori').value = stripHtml(item.Kategori || '');
-            document.getElementById('form-tipe').value = stripHtml(item.Tipe || 'checklist');
-            document.getElementById('form-judul').value = stripHtml(item.Judul || '');
+            let katLengkap = stripHtmlLocal(decodeEntities(item.Kategori || ''));
+            let parts = katLengkap.split('::');
+            let tipeRaw = stripHtmlLocal(item.Tipe || 'checklist').toLowerCase();
+
+            if (parts.length > 1 && tipeRaw !== 'grupmenu') {
+                document.getElementById('form-grup').value = parts[0].trim();
+                document.getElementById('form-kategori').value = parts[1].trim();
+            } else {
+                document.getElementById('form-grup').value = '';
+                document.getElementById('form-kategori').value = katLengkap;
+            }
+
+            document.getElementById('form-tipe').value = tipeRaw;
+            document.getElementById('form-judul').value = stripHtmlLocal(decodeEntities(item.Judul || ''));
             
-            // Masukkan data HTML secara bersih tanpa menghancurkan format
             let editDeskripsi = decodeEntities(item.Deskripsi || '');
-            
-            // Konversi native newline ke <br> khusus untuk plain-text agar terlihat di WYSIWYG
-            // Jangan lakukan ini jika datanya sudah berbentuk tag HTML agar layout tidak rusak
             if(editDeskripsi && !/<[a-z][\s\S]*>/i.test(editDeskripsi)) {
                 editDeskripsi = editDeskripsi.replace(/\n/g, '<br>');
             }
             document.getElementById('form-deskripsi').innerHTML = editDeskripsi;
             
-            document.getElementById('form-ikon').value = stripHtml(item.Ikon || '');
-            document.getElementById('form-media').value = stripHtml(item.Media || '');
+            document.getElementById('form-ikon').value = stripHtmlLocal(decodeEntities(item.Ikon || ''));
+            document.getElementById('form-media').value = stripHtmlLocal(decodeEntities(item.Media || ''));
+
+            handleTipeChange();
 
             document.getElementById('form-modal-title').innerText = 'Edit Data SOP';
             document.getElementById('form-modal').classList.remove('hidden');
@@ -566,12 +605,21 @@
             e.preventDefault();
             const action = document.getElementById('form-action').value;
             
+            let tipe = document.getElementById('form-tipe').value;
+            let katInput = document.getElementById('form-kategori').value.trim().replace(/\s+/g, '_');
+            let grupInput = document.getElementById('form-grup').value;
+            
+            let finalKategori = katInput;
+            if (tipe !== 'grupmenu' && grupInput !== '') {
+                finalKategori = `${grupInput}::${katInput}`;
+            }
+
             const payload = {
                 action: action,
                 rowIndex: document.getElementById('form-rowindex').value,
                 data: {
-                    Kategori: document.getElementById('form-kategori').value,
-                    Tipe: document.getElementById('form-tipe').value,
+                    Kategori: finalKategori,
+                    Tipe: tipe,
                     Judul: document.getElementById('form-judul').value,
                     Deskripsi: document.getElementById('form-deskripsi').innerHTML,
                     Ikon: document.getElementById('form-ikon').value,
@@ -706,36 +754,115 @@
             let firstTabId = '';
             window.dynamicTitlesMap = {}; 
 
+            // 1. Peta Grup Menu (Folders)
+            let groupMap = {};
+            data.forEach(row => {
+                let tipe = row.Tipe ? row.Tipe.toLowerCase().trim() : '';
+                let kat = row.Kategori ? row.Kategori.toLowerCase().trim() : '';
+                if (tipe === 'grupmenu') {
+                    groupMap[kat] = {
+                        id: kat,
+                        title: decodeEntities(row.Judul),
+                        icon: row.Ikon ? decodeEntities(row.Ikon).replace(/<[^>]*>?/gm, '').trim() : 'fas fa-folder',
+                        items: [],
+                        config: row
+                    };
+                }
+            });
+
+            // 2. Organisasi Kategori Unik
             const uniqueKategori = [...new Set(data.map(item => item.Kategori ? item.Kategori.toLowerCase().trim() : '').filter(k => k))];
+            let standaloneMenus = [];
 
             uniqueKategori.forEach(kategori => {
                 const items = data.filter(item => item.Kategori.toLowerCase().trim() === kategori);
-                let menuConfig = items.find(item => item.Tipe.toLowerCase().trim() === 'menu');
                 
-                // Decode HTML entitities di Judul dan Tab
+                // Lewati render sebagai tab jika ia murni hanya folder/grup menu tanpa konten lain
+                let isJustGroup = items.length === 1 && items[0].Tipe.toLowerCase().trim() === 'grupmenu';
+                if (isJustGroup) return;
+
+                let menuConfig = items.find(item => item.Tipe.toLowerCase().trim() === 'menu');
                 let tabTitle = menuConfig ? decodeEntities(menuConfig.Judul) : (kategori.charAt(0).toUpperCase() + kategori.slice(1));
                 
                 let tabDesc = menuConfig ? decodeEntities(menuConfig.Deskripsi || '') : '';
-                // Tab deskripsi biasanya tidak mengandung format HTML tebal, hanya replace \n
-                if (tabDesc && !/<[a-z][\s\S]*>/i.test(tabDesc)) {
-                    tabDesc = tabDesc.replace(/\n/g, '<br>');
+                if (tabDesc && !/<[a-z][\s\S]*>/i.test(tabDesc)) { tabDesc = tabDesc.replace(/\n/g, '<br>'); }
+
+                let tabIcon = menuConfig && menuConfig.Ikon ? decodeEntities(menuConfig.Ikon).replace(/<[^>]*>?/gm, '').trim() : 'fas fa-file-alt';
+
+                let domId = kategori.replace(/[^a-zA-Z0-9_-]/g, '_');
+                
+                window.dynamicTitlesMap[domId] = { title: tabTitle, desc: tabDesc };
+                if (isFirstTab) { firstTabId = domId; isFirstTab = false; }
+
+                let tabObj = {
+                    kategori: kategori,
+                    domId: domId,
+                    title: tabTitle,
+                    icon: tabIcon,
+                    menuConfig: menuConfig,
+                    items: items
+                };
+
+                let parts = kategori.split('::');
+                if (parts.length > 1) {
+                    let groupId = parts[0].trim();
+                    if (!groupMap[groupId]) {
+                        // Bikin folder sementara jika belum ada 'grupmenu' spesifik
+                        groupMap[groupId] = { id: groupId, title: groupId.charAt(0).toUpperCase() + groupId.slice(1), icon: 'fas fa-folder', items: [] };
+                    }
+                    groupMap[groupId].items.push(tabObj);
+                } else {
+                    standaloneMenus.push(tabObj);
                 }
+            });
 
-                let tabIcon = menuConfig && menuConfig.Ikon ? decodeEntities(menuConfig.Ikon).replace(/<[^>]*>?/gm, '').trim() : 'fas fa-folder';
-
-                window.dynamicTitlesMap[kategori] = { title: tabTitle, desc: tabDesc };
-                if (isFirstTab) firstTabId = kategori;
-
-                tabsHtml += `
+            // 3. Render HTML Sidebar
+            const buildMenuBtn = (tabObj, isChild = false) => {
+                let editBtn = currentUserRole === 'server' && tabObj.menuConfig ? `<button onclick="event.stopPropagation(); openEditModal(${tabObj.menuConfig._rowIndex})" class="absolute right-2 opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 bg-white rounded p-1 shadow z-10"><i class="fas fa-pen text-xs"></i></button>` : '';
+                return `
                     <li>
-                        <button id="btn-tab-${kategori}" onclick="showTab('${kategori}')" class="nav-btn w-full text-left px-6 py-3 ${isFirstTab ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'} transition-colors flex items-center gap-3 relative group">
-                            <i class="${tabIcon} w-5"></i> <span class="rich-text">${tabTitle}</span>
-                            ${currentUserRole === 'server' && menuConfig ? `<button onclick="event.stopPropagation(); openEditModal(${menuConfig._rowIndex})" class="absolute right-2 opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 bg-white rounded p-1"><i class="fas fa-pen"></i></button>` : ''}
+                        <button id="btn-tab-${tabObj.domId}" onclick="showTab('${tabObj.domId}')" class="nav-btn w-full text-left py-3 ${isChild ? 'px-10 text-sm' : 'px-6'} text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-3 relative group">
+                            <i class="${tabObj.icon} w-5 text-center"></i> <span class="rich-text truncate pr-6">${tabObj.title}</span>
+                            ${editBtn}
                         </button>
                     </li>
                 `;
+            };
 
-                contentHtml += `<section id="tab-${kategori}" class="tab-content ${isFirstTab ? 'block' : 'hidden'} space-y-6">`;
+            standaloneMenus.forEach(tabObj => { tabsHtml += buildMenuBtn(tabObj); });
+
+            Object.values(groupMap).forEach(group => {
+                if (group.items.length === 0) return; 
+                let childrenHtml = group.items.map(tabObj => buildMenuBtn(tabObj, true)).join('');
+                let editGroupBtn = currentUserRole === 'server' && group.config ? `<button onclick="event.stopPropagation(); openEditModal(${group.config._rowIndex})" class="absolute right-8 opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 bg-white rounded p-1 shadow z-10"><i class="fas fa-pen text-xs"></i></button>` : '';
+                let groupDomId = group.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+                
+                tabsHtml += `
+                    <li>
+                        <button onclick="toggleGroup('${groupDomId}')" class="w-full text-left px-6 py-3 text-gray-800 font-bold bg-gray-100 border-b border-gray-200 hover:bg-gray-200 transition-colors flex items-center justify-between group relative">
+                            <div class="flex items-center gap-3">
+                                <i class="${group.icon} w-5 text-blue-600 text-center"></i> <span class="truncate pr-8">${group.title}</span>
+                            </div>
+                            ${editGroupBtn}
+                            <i id="icon-group-${groupDomId}" class="fas fa-chevron-up text-xs text-gray-500 transition-transform"></i>
+                        </button>
+                        <ul id="group-${groupDomId}" class="bg-gray-50/50">
+                            ${childrenHtml}
+                        </ul>
+                    </li>
+                `;
+            });
+
+            // 4. Render HTML Isi Tab (Sections)
+            let allTabsToRender = [...standaloneMenus];
+            Object.values(groupMap).forEach(group => { allTabsToRender.push(...group.items); });
+
+            allTabsToRender.forEach(tabObj => {
+                let kategori = tabObj.kategori;
+                let domId = tabObj.domId;
+                let items = tabObj.items;
+
+                contentHtml += `<section id="tab-${domId}" class="tab-content hidden space-y-6">`;
 
                 let currentGroup = ''; 
                 let groupHtml = '';
@@ -751,7 +878,7 @@
 
                 items.forEach(row => {
                     let tipe = row.Tipe ? row.Tipe.toLowerCase().trim() : '';
-                    if (tipe === 'menu') return; 
+                    if (tipe === 'menu' || tipe === 'grupmenu') return; 
 
                     if (['info', 'title', ''].includes(tipe) || tipe !== currentGroup) {
                         if (currentGroup !== '') closeGroup();
@@ -759,14 +886,12 @@
 
                     currentGroup = ['checklist', 'step', 'card', 'kpicard'].includes(tipe) ? tipe : '';
 
-                    // Menerjemahkan data untuk ditampilkan dengan aman
                     let displayJudul = decodeEntities(row.Judul || '');
                     let displayDeskripsi = decodeEntities(row.Deskripsi || '');
                     let checkId = 'check_' + (displayJudul ? displayJudul.replace(/<[^>]*>?/gm, '').replace(/\s+/g, '_').toLowerCase() : Math.random().toString(36).substr(2, 9));
                     let mediaHtml = renderMedia(decodeEntities(row.Media));
                     let cleanIcon = row.Ikon ? decodeEntities(row.Ikon).replace(/<[^>]*>?/gm, '').trim() : '';
 
-                    // Jika deskripsi plain text (tidak ada tag HTML WYSIWYG), tambahkan <br>
                     if (displayDeskripsi && !/<[a-z][\s\S]*>/i.test(displayDeskripsi)) {
                         displayDeskripsi = displayDeskripsi.replace(/\n/g, '<br>');
                     }
@@ -808,35 +933,36 @@
 
                 if (currentGroup !== '') closeGroup();
                 
-                // Tombol Tambah Data Ke Kategori Khusus (Hanya muncul jika Role = Server)
+                // Tombol Tambah Data Khusus ke Kategori Ini
                 if (currentUserRole === 'server') {
+                    // Jika tabnya ada di dalam grup, Escape String untuk Javascript
+                    let safeKategoriParam = kategori.replace(/'/g, "\\'");
+                    
                     contentHtml += `
                         <div class="mt-6 pt-6 border-t border-gray-200 border-dashed flex justify-center">
-                            <button onclick="openAddModal('${kategori}')" class="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors border border-blue-200 border-dashed w-full flex items-center justify-center gap-2 font-medium shadow-sm">
-                                <i class="fas fa-plus-circle"></i> Tambah Data Baru ke "${tabTitle}"
+                            <button onclick="openAddModal('${safeKategoriParam}')" class="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors border border-blue-200 border-dashed w-full flex items-center justify-center gap-2 font-medium shadow-sm">
+                                <i class="fas fa-plus-circle"></i> Tambah Data Baru ke Tab "${tabObj.title}"
                             </button>
                         </div>
                     `;
                 }
 
                 contentHtml += `</section>`;
-                isFirstTab = false;
             });
 
             document.getElementById('sidebar-menu').innerHTML = tabsHtml;
             document.getElementById('main-content').innerHTML = contentHtml;
             
             if (firstTabId) {
-                document.getElementById('page-title').innerHTML = window.dynamicTitlesMap[firstTabId].title;
-                document.getElementById('page-desc').innerHTML = window.dynamicTitlesMap[firstTabId].desc;
+                showTab(firstTabId);
             }
 
             document.getElementById('loading-indicator').classList.add('hidden');
             loadDynamicProgress();
         }
 
-        // --- Navigasi Tab ---
-        function showTab(kategoriId) {
+        // --- Navigasi Tab & Grup ---
+        function showTab(kategoriDomId) {
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.add('hidden');
                 el.classList.remove('block');
@@ -846,25 +972,37 @@
                 el.classList.add('text-gray-600', 'hover:bg-gray-50');
             });
             
-            const activeTab = document.getElementById('tab-' + kategoriId);
+            const activeTab = document.getElementById('tab-' + kategoriDomId);
             if(activeTab) {
                 activeTab.classList.remove('hidden');
                 activeTab.classList.add('block');
             }
             
-            const activeBtn = document.getElementById('btn-tab-' + kategoriId);
+            const activeBtn = document.getElementById('btn-tab-' + kategoriDomId);
             if(activeBtn) {
                 activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-50');
                 activeBtn.classList.add('bg-blue-50', 'text-blue-600', 'border-r-4', 'border-blue-600', 'font-medium');
             }
             
-            if(window.dynamicTitlesMap && window.dynamicTitlesMap[kategoriId]) {
-                document.getElementById('page-title').innerHTML = window.dynamicTitlesMap[kategoriId].title;
-                document.getElementById('page-desc').innerHTML = window.dynamicTitlesMap[kategoriId].desc;
+            if(window.dynamicTitlesMap && window.dynamicTitlesMap[kategoriDomId]) {
+                document.getElementById('page-title').innerHTML = window.dynamicTitlesMap[kategoriDomId].title;
+                document.getElementById('page-desc').innerHTML = window.dynamicTitlesMap[kategoriDomId].desc;
             }
         }
         
-        // Menambahkan kembali fungsi penyimpanan progress yang sempat terputus
+        function toggleGroup(groupDomId) {
+            const ul = document.getElementById(`group-${groupDomId}`);
+            const icon = document.getElementById(`icon-group-${groupDomId}`);
+            if (ul.classList.contains('hidden')) {
+                ul.classList.remove('hidden');
+                icon.classList.remove('rotate-180');
+            } else {
+                ul.classList.add('hidden');
+                icon.classList.add('rotate-180');
+            }
+        }
+
+        // Checklists Memory
         function saveDynamicProgress(checkboxElement) {
             let state = JSON.parse(localStorage.getItem('sopDynamicDataState')) || {};
             state[checkboxElement.dataset.id] = checkboxElement.checked;
