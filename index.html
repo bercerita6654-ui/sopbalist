@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem SOP & Checklist Admin Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .checkbox-custom:checked + div {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .checkbox-custom:checked + div svg { display: block; }
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6;
+            border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Kustomisasi khusus untuk Rich Text dari Spreadsheet agar tidak tertimpa Tailwind CSS */
+        .rich-text b, .rich-text strong { font-weight: 700 !important; }
+        .rich-text i, .rich-text em { font-style: italic !important; }
+        .rich-text u { text-decoration: underline !important; }
+        .rich-text s, .rich-text strike { text-decoration: line-through !important; }
+        .rich-text ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .rich-text ol { list-style-type: decimal !important; padding-left: 1.5rem !important; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .rich-text li { display: list-item !important; margin-bottom: 0.25rem; }
+        
+        /* Smooth fade */
+        .fade-out { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        
+        /* WYSIWYG Editor */
+        #form-deskripsi[contenteditable="true"]:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+            display: block;
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden relative">
+
+    <!-- LOGIN OVERLAY -->
+    <div id="login-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-95 z-[200] flex items-center justify-center transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm transform transition-transform">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                    <i class="fas fa-user-lock"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Portal Login</h2>
+                <p class="text-sm text-gray-500 mt-1">Sistem SOP Admin Marketplace</p>
+            </div>
+            
+            <div id="login-error" class="hidden bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-200 mb-4 flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i> Username atau Password salah!
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="login-username" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="Masukkan username">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="login-password" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="••••••••">
+                </div>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition mt-2 shadow-lg shadow-blue-200">
+                    Masuk <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white shadow-xl flex flex-col z-10 h-full">
+        <div class="p-6 border-b">
+            <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-store text-blue-600"></i>
+                Portal Admin
+            </h1>
+            <p class="text-xs text-gray-500 mt-1">SOP & Checklist Harian</p>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4">
+            <!-- Sidebar Items -->
+            <ul id="sidebar-menu" class="space-y-1"></ul>
+        </nav>
+
+        <div class="p-4 border-t flex flex-col gap-2">
+            <!-- Tombol Tambah Data (Hanya untuk Server) -->
+            <button id="btn-add-data" onclick="openAddModal()" class="hidden w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center gap-2 text-sm font-bold shadow-md shadow-blue-200 mb-2">
+                <i class="fas fa-plus-circle"></i> Tambah Data SOP
+            </button>
+
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <p class="text-xs text-gray-500 mb-1">Login sebagai:</p>
+                <p id="user-display-name" class="font-semibold text-sm text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-user-circle text-blue-500"></i> Memuat...
+                </p>
+            </div>
+            <button onclick="resetChecklists()" class="w-full py-2 px-4 bg-white text-gray-600 rounded-lg border border-gray-300 hover:bg-gray-50 transition duration-200 flex items-center justify-center gap-2 text-sm font-medium">
+                <i class="fas fa-undo"></i> Reset Checklist
+            </button>
+            <button onclick="handleLogout()" class="w-full py-2 px-4 bg-red-50 text-red-600 rounded-lg border border-red-200 hover:bg-red-100 transition duration-200 flex items-center justify-center gap-2 text-sm font-medium">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-8 relative">
+        
+        <header class="mb-8 flex justify-between items-end border-b pb-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-3xl font-bold text-gray-800 rich-text" id="page-title">Loading...</h2>
+                    <span id="server-badge" class="hidden px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full border border-purple-200"><i class="fas fa-shield-alt"></i> Edit Mode (Server)</span>
+                </div>
+                <!-- Menggunakan div agar tag HTML internal bisa dibaca bersih -->
+                <div class="text-gray-500 mt-2 rich-text" id="page-desc">Menyiapkan data dari Spreadsheet.</div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-500">Tanggal Hari Ini</p>
+                <p class="font-semibold text-gray-800" id="current-date"></p>
+            </div>
+        </header>
+
+        <!-- Loading State Utama -->
+        <div id="loading-indicator" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20">
+            <div class="loader mb-4"></div>
+            <p class="text-gray-600 font-medium">Menyinkronkan data dengan Server...</p>
+        </div>
+
+        <div id="main-content"></div>
+
+    </main>
+
+    <!-- Modal untuk Zoom Gambar -->
+    <div id="image-modal" class="fixed inset-0 z-[100] hidden bg-black bg-opacity-90 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity" onclick="closeModal()">
+        <span class="absolute top-6 right-8 text-white text-4xl font-bold cursor-pointer hover:text-gray-300 transition-colors">&times;</span>
+        <img id="modal-img" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl cursor-zoom-out" src="" alt="Zoomed Image">
+    </div>
+
+    <!-- Modal Form (Tambah/Edit) -->
+    <div id="form-modal" class="fixed inset-0 z-[150] hidden bg-gray-900 bg-opacity-70 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[95vh] flex flex-col overflow-hidden relative">
+            
+            <!-- Loading Overlay saat Submit -->
+            <div id="form-saving" class="hidden absolute inset-0 bg-white bg-opacity-90 z-10 flex flex-col items-center justify-center">
+                <div class="loader mb-4"></div>
+                <p class="font-bold text-gray-700">Menyimpan ke Spreadsheet...</p>
+                <p class="text-sm text-gray-500 text-center mt-2 px-4">Proses ini mungkin memakan waktu beberapa detik.</p>
+            </div>
+
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <h3 id="form-modal-title" class="text-lg font-bold text-gray-800">Tambah Data SOP</h3>
+                <button onclick="closeDataModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            
+            <form id="data-form" onsubmit="submitDataForm(event)" class="p-6 overflow-y-auto flex-1 space-y-4">
+                <input type="hidden" id="form-action" value="add">
+                <input type="hidden" id="form-rowindex" value="">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kategori (Tab ID) *</label>
+                        <input type="text" id="form-kategori" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="contoh: persiapan">
+                        <p class="text-[10px] text-gray-500 mt-1">Nama tab tempat data ini bernaung.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tipe Kotak *</label>
+                        <select id="form-tipe" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="menu">Tab Menu Baru (Sidebar)</option>
+                            <option value="title">Judul Pemisah</option>
+                            <option value="info">Kotak Info Kuning</option>
+                            <option value="card">Kotak Deskripsi (Card)</option>
+                            <option value="step">Langkah Berurutan (Step)</option>
+                            <option value="checklist" selected>Checklist Harian</option>
+                            <option value="kpicard">Kotak KPI Target</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Judul / Teks Utama *</label>
+                    <input type="text" id="form-judul" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Judul tugas atau informasi">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi / Detail</label>
+                    
+                    <!-- EDITOR WYSIWYG -->
+                    <div class="border border-gray-300 rounded-lg overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition shadow-sm">
+                        
+                        <!-- Toolbar -->
+                        <div class="bg-gray-100 border-b border-gray-300 flex flex-wrap gap-1 p-2 items-center text-gray-700 text-sm">
+                            <button type="button" onmousedown="event.preventDefault(); formatText('bold')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Bold"><i class="fas fa-bold"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); formatText('italic')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Italic"><i class="fas fa-italic"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); formatText('underline')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Underline"><i class="fas fa-underline"></i></button>
+                            
+                            <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                            
+                            <select onchange="formatText('fontSize', this.value); this.selectedIndex=0;" class="h-8 px-2 bg-transparent hover:bg-white rounded border-none text-sm cursor-pointer outline-none transition" title="Ukuran Font">
+                                <option value="">Ukuran Font</option>
+                                <option value="1">Sangat Kecil</option>
+                                <option value="2">Kecil</option>
+                                <option value="3">Normal</option>
+                                <option value="4">Sedang</option>
+                                <option value="5">Besar</option>
+                                <option value="6">Sangat Besar</option>
+                                <option value="7">Raksasa</option>
+                            </select>
+                            
+                            <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                            
+                            <label class="flex items-center gap-1 h-8 px-2 hover:bg-white rounded cursor-pointer transition" title="Warna Teks">
+                                <i class="fas fa-font text-gray-600"></i>
+                                <input type="color" onchange="formatText('foreColor', this.value)" class="w-5 h-5 p-0 border-none bg-transparent cursor-pointer">
+                            </label>
+                            
+                            <label class="flex items-center gap-1 h-8 px-2 hover:bg-white rounded cursor-pointer transition" title="Warna Latar (Highlight)">
+                                <i class="fas fa-highlighter text-gray-600"></i>
+                                <input type="color" onchange="formatText('hiliteColor', this.value)" value="#ffff00" class="w-5 h-5 p-0 border-none bg-transparent cursor-pointer">
+                            </label>
+
+                            <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                            
+                            <button type="button" onmousedown="event.preventDefault(); formatText('justifyLeft')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Rata Kiri"><i class="fas fa-align-left"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); formatText('justifyCenter')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Rata Tengah"><i class="fas fa-align-center"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); formatText('justifyRight')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Rata Kanan"><i class="fas fa-align-right"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); formatText('justifyFull')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Rata Kiri Kanan"><i class="fas fa-align-justify"></i></button>
+
+                            <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                            
+                            <button type="button" onmousedown="event.preventDefault(); formatText('insertUnorderedList')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Bullets"><i class="fas fa-list-ul"></i></button>
+                            <button type="button" onmousedown="event.preventDefault(); formatText('insertOrderedList')" class="w-8 h-8 flex items-center justify-center hover:bg-white rounded transition" title="Numbering"><i class="fas fa-list-ol"></i></button>
+
+                            <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                            
+                            <select onchange="formatText('insertText', this.value); this.selectedIndex=0;" class="h-8 px-2 bg-transparent hover:bg-white rounded border-none text-sm cursor-pointer outline-none transition" title="Sisipkan Simbol">
+                                <option value="">Simbol</option>
+                                <option value="★">★ Bintang</option>
+                                <option value="✓">✓ Centang</option>
+                                <option value="✗">✗ Silang</option>
+                                <option value="⚠">⚠ Peringatan</option>
+                                <option value="→">→ Panah Kanan</option>
+                                <option value="←">← Panah Kiri</option>
+                                <option value="©">© Copyright</option>
+                                <option value="®">® Registered</option>
+                                <option value="™">™ Trademark</option>
+                                <option value="•">• Bullet Kecil</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Area Ketik ContentEditable -->
+                        <div id="form-deskripsi" contenteditable="true" data-placeholder="Ketik keterangan lengkap di sini..." class="w-full p-4 bg-gray-50 min-h-[120px] max-h-[300px] overflow-y-auto outline-none rich-text text-gray-800"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Ikon (FontAwesome)</label>
+                        <input type="text" id="form-ikon" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="fas fa-box text-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Link Media (Drive/YT/Gambar)</label>
+                        <input type="url" id="form-media" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t mt-6">
+                    <button type="button" onclick="closeDataModal()" class="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 rounded-lg text-white font-bold hover:bg-blue-700 shadow-md">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+        <i class="fas fa-info-circle text-blue-400"></i>
+        <span id="toast-msg">Notifikasi</span>
+    </div>
+
+    <script>
+        // =========================================================================
+        // PENTING: GANTI TEXT DI BAWAH INI DENGAN URL WEB APP DARI APPS SCRIPT ANDA
+        // =========================================================================
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzLlOlw0T3aW9xSnQFsb5FyrA6z5R3GWlCC6dILS6H8j457QO6F2gHeFKQgRZs0JSlNnw/exec"; 
+
+        // State Global Aplikasi
+        window.appData = [];
+        let currentUserRole = localStorage.getItem('sopUserRole') || null;
+
+        // PENGAMAN DATA: Fungsi untuk membaca kode mentah dari Server (Apps Script) 
+        // dan mengembalikannya menjadi bentuk tag visual HTML yang asli.
+        function decodeEntities(encodedString) {
+            if (!encodedString) return '';
+            var textArea = document.createElement('textarea');
+            textArea.innerHTML = encodedString;
+            return textArea.value;
+        }
+
+        // Data Simulasi (Jika API Gagal)
+        const dummyData = [
+            { Kategori: 'persiapan', Tipe: 'menu', Judul: 'Data Induk', Deskripsi: 'Informasi dasar operasional dari Spreadsheet.', Ikon: 'fas fa-database', Media: '' },
+            { Kategori: 'persiapan', Tipe: 'info', Judul: 'Aturan Dasar', Deskripsi: 'Jam Operasional <b>08:00 - 17:00</b>.<br>Cutoff jam 15:00.', Ikon: 'fas fa-exclamation-triangle', Media: '' },
+            { Kategori: 'persiapan', Tipe: 'title', Judul: 'Informasi Penting', Deskripsi: 'Berikut hal-hal yang perlu dipersiapkan.', Ikon: 'fas fa-bullhorn text-blue-500', Media: '' },
+            { Kategori: 'persiapan', Tipe: 'card', Judul: 'Master Data Produk', Deskripsi: 'Pahami SKU, nama varian, dan letak fisik barang.', Ikon: 'fas fa-box text-orange-500', Media: '' },
+            { Kategori: 'pagi', Tipe: 'menu', Judul: 'Aktivitas Pagi', Deskripsi: 'Rutinitas harian saat membuka toko.', Ikon: 'fas fa-sun', Media: '' },
+            { Kategori: 'pagi', Tipe: 'checklist', Judul: 'Absensi & Login', Deskripsi: 'Buka semua tab marketplace.', Ikon: '', Media: '' }
+        ];
+
+        // --- SISTEM AUTENTIKASI ---
+        function checkAuth() {
+            if (!currentUserRole) {
+                document.getElementById('login-overlay').classList.remove('hidden', 'fade-out');
+            } else {
+                document.getElementById('login-overlay').classList.add('fade-out');
+                setTimeout(() => document.getElementById('login-overlay').classList.add('hidden'), 500);
+                
+                if (currentUserRole === 'server') {
+                    document.getElementById('user-display-name').innerHTML = '<i class="fas fa-user-shield text-purple-600"></i> Admin Server';
+                    document.getElementById('server-badge').classList.remove('hidden');
+                    document.getElementById('btn-add-data').classList.remove('hidden');
+                } else {
+                    document.getElementById('user-display-name').innerHTML = '<i class="fas fa-user text-blue-500"></i> Admin Utama';
+                    document.getElementById('server-badge').classList.add('hidden');
+                    document.getElementById('btn-add-data').classList.add('hidden');
+                }
+                initApp(); 
+            }
+        }
+
+        function handleLogin() {
+            const u = document.getElementById('login-username').value;
+            const p = document.getElementById('login-password').value;
+            
+            if (u === 'server' && p === '0000') {
+                localStorage.setItem('sopUserRole', 'server');
+                currentUserRole = 'server';
+                checkAuth();
+            } else if (u === 'admin' && p === '123') {
+                localStorage.setItem('sopUserRole', 'admin');
+                currentUserRole = 'admin';
+                checkAuth();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('login-password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        function handleLogout() {
+            if(confirm('Apakah Anda yakin ingin keluar?')) {
+                localStorage.removeItem('sopUserRole');
+                location.reload();
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 4000);
+        }
+
+        // --- SISTEM WYSIWYG EDITOR ---
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('form-deskripsi').focus();
+        }
+        
+        // --- FUNGSI MODAL ZOOM GAMBAR ---
+        function openModal(src) {
+            document.getElementById('modal-img').src = src;
+            document.getElementById('image-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('image-modal').classList.add('hidden');
+            setTimeout(() => { document.getElementById('modal-img').src = ''; }, 300);
+        }
+
+        function handleImageError(imgEl, originalUrl) {
+            const parent = imgEl.parentElement;
+            parent.innerHTML = `<a href="${originalUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg text-sm font-medium hover:bg-yellow-100 transition"><i class="fas fa-external-link-alt"></i> Buka Gambar di Tab Baru</a>
+            <p class="text-xs text-gray-500 mt-2 whitespace-pre-wrap">Gambar gagal dimuat. Pastikan akses diset "Siapa saja yang memiliki tautan".</p>`;
+        }
+
+        // --- SISTEM CRUD & API ---
+        function openAddModal() {
+            document.getElementById('form-action').value = 'add';
+            document.getElementById('form-rowindex').value = '';
+            document.getElementById('data-form').reset();
+            document.getElementById('form-deskripsi').innerHTML = '';
+            document.getElementById('form-modal-title').innerText = 'Tambah Data SOP';
+            document.getElementById('form-modal').classList.remove('hidden');
+        }
+
+        function openEditModal(rowIndex) {
+            const item = window.appData.find(row => row._rowIndex === rowIndex);
+            if(!item) return;
+
+            document.getElementById('form-action').value = 'edit';
+            document.getElementById('form-rowindex').value = rowIndex;
+            
+            // PENGAMAN DATA: Memastikan tag HTML tidak terbuang/kacau saat masuk form edit
+            const stripHtml = (html) => {
+                let tmp = document.createElement("DIV");
+                tmp.innerHTML = decodeEntities(html); // Decode tag agar tidak bocor
+                return tmp.textContent || tmp.innerText || "";
+            };
+
+            document.getElementById('form-kategori').value = stripHtml(item.Kategori || '');
+            document.getElementById('form-tipe').value = stripHtml(item.Tipe || 'checklist');
+            document.getElementById('form-judul').value = stripHtml(item.Judul || '');
+            
+            // Masukkan data HTML secara bersih tanpa menghancurkan format
+            let editDeskripsi = decodeEntities(item.Deskripsi || '');
+            
+            // Konversi native newline ke <br> khusus untuk plain-text agar terlihat di WYSIWYG
+            // Jangan lakukan ini jika datanya sudah berbentuk tag HTML agar layout tidak rusak
+            if(editDeskripsi && !/<[a-z][\s\S]*>/i.test(editDeskripsi)) {
+                editDeskripsi = editDeskripsi.replace(/\n/g, '<br>');
+            }
+            document.getElementById('form-deskripsi').innerHTML = editDeskripsi;
+            
+            document.getElementById('form-ikon').value = stripHtml(item.Ikon || '');
+            document.getElementById('form-media').value = stripHtml(item.Media || '');
+
+            document.getElementById('form-modal-title').innerText = 'Edit Data SOP';
+            document.getElementById('form-modal').classList.remove('hidden');
+        }
+
+        function closeDataModal() {
+            document.getElementById('form-modal').classList.add('hidden');
+        }
+
+        async function submitDataForm(e) {
+            e.preventDefault();
+            const action = document.getElementById('form-action').value;
+            
+            const payload = {
+                action: action,
+                rowIndex: document.getElementById('form-rowindex').value,
+                data: {
+                    Kategori: document.getElementById('form-kategori').value,
+                    Tipe: document.getElementById('form-tipe').value,
+                    Judul: document.getElementById('form-judul').value,
+                    Deskripsi: document.getElementById('form-deskripsi').innerHTML,
+                    Ikon: document.getElementById('form-ikon').value,
+                    Media: document.getElementById('form-media').value
+                }
+            };
+
+            document.getElementById('form-saving').classList.remove('hidden');
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if(result.success) {
+                    showToast(action === 'add' ? 'Data berhasil ditambahkan!' : 'Data berhasil diperbarui!');
+                    closeDataModal();
+                    initApp(); 
+                } else {
+                    alert('Gagal menyimpan: ' + (result.error || 'Unknown error'));
+                }
+            } catch (err) {
+                showToast('Permintaan diproses. Memuat ulang data...');
+                closeDataModal();
+                setTimeout(initApp, 1500);
+            }
+            
+            document.getElementById('form-saving').classList.add('hidden');
+        }
+
+        async function deleteData(rowIndex) {
+            if(confirm('Hapus permanen elemen ini dari Spreadsheet? Proses ini tidak dapat dibatalkan.')) {
+                
+                document.getElementById('loading-indicator').classList.remove('hidden');
+                document.querySelector('#loading-indicator p').innerText = "Menghapus data di Server...";
+
+                const payload = { action: 'delete', rowIndex: rowIndex, data: {} };
+
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+                    await response.json();
+                    showToast('Data berhasil dihapus!');
+                    initApp();
+                } catch (err) {
+                    showToast('Permintaan penghapusan terkirim. Memuat ulang...');
+                    setTimeout(initApp, 1500);
+                }
+            }
+        }
+
+
+        // --- INIT & RENDER ---
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        async function initApp() {
+            document.getElementById('loading-indicator').classList.remove('hidden');
+            document.querySelector('#loading-indicator p').innerText = "Mengambil data terbaru dari Apps Script...";
+            
+            if(APPS_SCRIPT_URL === "PASTE_URL_WEB_APP_APPS_SCRIPT_DISINI" || APPS_SCRIPT_URL === "") {
+                alert("URL Apps Script belum diatur.");
+                renderData(dummyData);
+            } else {
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL);
+                    if (!response.ok) throw new Error("Jaringan bermasalah.");
+                    const data = await response.json();
+                    
+                    if(data.error) {
+                        console.error("Error Sheet:", data.error);
+                        alert("Terjadi kesalahan: " + data.error);
+                        renderData(dummyData); 
+                        return;
+                    }
+
+                    data.forEach((item, idx) => {
+                        item._rowIndex = idx + 2; 
+                    });
+                    
+                    window.appData = data; 
+                    renderData(data);
+                } catch (error) {
+                    console.error("Fetch API Gagal:", error);
+                    alert("Gagal memuat data dari server. Memuat simulasi data.");
+                    renderData(dummyData); 
+                }
+            }
+        }
+
+        window.onload = checkAuth;
+
+        function renderMedia(mediaUrl) {
+            if (!mediaUrl || mediaUrl.trim() === '') return '';
+            let url = mediaUrl.trim();
+            
+            let ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if (ytMatch && ytMatch[1]) return `<div class="mt-4 w-full max-w-xl relative z-0"><iframe class="w-full aspect-video rounded-lg shadow-sm border border-gray-200" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe></div>`;
+            
+            let driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (driveMatch && driveMatch[1]) {
+                let driveId = driveMatch[1];
+                let imgSrc = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
+                return `<div class="mt-4 flex flex-col items-start gap-2 relative z-0">
+                            <img src="${imgSrc}" onclick="openModal('${imgSrc}')" class="w-full max-w-[600px] max-h-[600px] object-contain bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition cursor-zoom-in" onerror="handleImageError(this, '${url}')">
+                            <a href="${url}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 mt-1 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition"><i class="fas fa-play-circle"></i> Buka File / Mainkan Video Asli</a>
+                        </div>`;
+            }
+
+            if (url.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
+                return `<div class="mt-4 w-full max-w-xl relative z-0"><video controls playsinline preload="metadata" class="w-full max-h-[600px] bg-black rounded-lg shadow-sm border border-gray-200"><source src="${url}">Maaf, browser Anda tidak mendukung pemutar video.</video></div>`;
+            }
+            
+            if (url.match(/\.(jpeg|jpg|png|webp|gif)(\?.*)?$/i)) {
+                return `<div class="mt-4 relative z-0"><img src="${url}" onclick="openModal('${url}')" class="w-full max-w-[600px] max-h-[600px] object-contain bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition cursor-zoom-in" onerror="handleImageError(this, '${url}')"></div>`;
+            }
+            
+            return `<div class="mt-4 relative z-0"><a href="${url}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition"><i class="fas fa-external-link-alt"></i> Buka Lampiran</a></div>`;
+        }
+
+        // Render Utama UI
+        function renderData(data) {
+            let tabsHtml = '';
+            let contentHtml = '';
+            let isFirstTab = true;
+            let firstTabId = '';
+            window.dynamicTitlesMap = {}; 
+
+            const uniqueKategori = [...new Set(data.map(item => item.Kategori ? item.Kategori.toLowerCase().trim() : '').filter(k => k))];
+
+            uniqueKategori.forEach(kategori => {
+                const items = data.filter(item => item.Kategori.toLowerCase().trim() === kategori);
+                let menuConfig = items.find(item => item.Tipe.toLowerCase().trim() === 'menu');
+                
+                // Decode HTML entitities di Judul dan Tab
+                let tabTitle = menuConfig ? decodeEntities(menuConfig.Judul) : (kategori.charAt(0).toUpperCase() + kategori.slice(1));
+                
+                let tabDesc = menuConfig ? decodeEntities(menuConfig.Deskripsi || '') : '';
+                // Tab deskripsi biasanya tidak mengandung format HTML tebal, hanya replace \n
+                if (tabDesc && !/<[a-z][\s\S]*>/i.test(tabDesc)) {
+                    tabDesc = tabDesc.replace(/\n/g, '<br>');
+                }
+
+                let tabIcon = menuConfig && menuConfig.Ikon ? decodeEntities(menuConfig.Ikon).replace(/<[^>]*>?/gm, '').trim() : 'fas fa-folder';
+
+                window.dynamicTitlesMap[kategori] = { title: tabTitle, desc: tabDesc };
+                if (isFirstTab) firstTabId = kategori;
+
+                tabsHtml += `
+                    <li>
+                        <button id="btn-tab-${kategori}" onclick="showTab('${kategori}')" class="nav-btn w-full text-left px-6 py-3 ${isFirstTab ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'} transition-colors flex items-center gap-3 relative group">
+                            <i class="${tabIcon} w-5"></i> <span class="rich-text">${tabTitle}</span>
+                            ${currentUserRole === 'server' && menuConfig ? `<button onclick="event.stopPropagation(); openEditModal(${menuConfig._rowIndex})" class="absolute right-2 opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 bg-white rounded p-1"><i class="fas fa-pen"></i></button>` : ''}
+                        </button>
+                    </li>
+                `;
+
+                contentHtml += `<section id="tab-${kategori}" class="tab-content ${isFirstTab ? 'block' : 'hidden'} space-y-6">`;
+
+                let currentGroup = ''; 
+                let groupHtml = '';
+
+                const closeGroup = () => {
+                    if (currentGroup === 'checklist') contentHtml += `<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-3 mb-6">${groupHtml}</div>`;
+                    else if (currentGroup === 'step') contentHtml += `<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">${groupHtml}</div>`;
+                    else if (currentGroup === 'card') contentHtml += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">${groupHtml}</div>`;
+                    else if (currentGroup === 'kpicard') contentHtml += `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">${groupHtml}</div>`;
+                    currentGroup = '';
+                    groupHtml = '';
+                };
+
+                items.forEach(row => {
+                    let tipe = row.Tipe ? row.Tipe.toLowerCase().trim() : '';
+                    if (tipe === 'menu') return; 
+
+                    if (['info', 'title', ''].includes(tipe) || tipe !== currentGroup) {
+                        if (currentGroup !== '') closeGroup();
+                    }
+
+                    currentGroup = ['checklist', 'step', 'card', 'kpicard'].includes(tipe) ? tipe : '';
+
+                    // Menerjemahkan data untuk ditampilkan dengan aman
+                    let displayJudul = decodeEntities(row.Judul || '');
+                    let displayDeskripsi = decodeEntities(row.Deskripsi || '');
+                    let checkId = 'check_' + (displayJudul ? displayJudul.replace(/<[^>]*>?/gm, '').replace(/\s+/g, '_').toLowerCase() : Math.random().toString(36).substr(2, 9));
+                    let mediaHtml = renderMedia(decodeEntities(row.Media));
+                    let cleanIcon = row.Ikon ? decodeEntities(row.Ikon).replace(/<[^>]*>?/gm, '').trim() : '';
+
+                    // Jika deskripsi plain text (tidak ada tag HTML WYSIWYG), tambahkan <br>
+                    if (displayDeskripsi && !/<[a-z][\s\S]*>/i.test(displayDeskripsi)) {
+                        displayDeskripsi = displayDeskripsi.replace(/\n/g, '<br>');
+                    }
+
+                    let adminControls = currentUserRole === 'server' ? `
+                        <div class="absolute -top-3 -right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 z-50">
+                            <button onclick="openEditModal(${row._rowIndex})" class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-indigo-200 hover:scale-110 shadow-md border border-indigo-200" title="Edit Data"><i class="fas fa-pen text-xs"></i></button>
+                            <button onclick="deleteData(${row._rowIndex})" class="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-200 hover:scale-110 shadow-md border border-red-200" title="Hapus Data"><i class="fas fa-trash text-xs"></i></button>
+                        </div>
+                    ` : '';
+
+                    if (tipe === 'title') {
+                        let iconHtml = cleanIcon ? `<i class="${cleanIcon} mr-2"></i>` : '';
+                        contentHtml += `<div class="border-l-4 border-blue-500 pl-4 py-1 mb-4 mt-2 relative group">${adminControls}<h3 class="text-xl font-bold text-gray-800 rich-text">${iconHtml}${displayJudul}</h3><div class="text-sm text-gray-500 rich-text mt-1">${displayDeskripsi}</div></div>`;
+                    }
+                    else if (tipe === 'info') {
+                        let iconClass = cleanIcon || 'fas fa-info-circle';
+                        if (!iconClass.includes('text-')) iconClass += ' text-yellow-600'; 
+                        contentHtml += `<div class="bg-yellow-50 rounded-xl shadow-sm border border-yellow-200 p-6 flex items-start gap-4 mb-6 relative group">${adminControls}<i class="${iconClass} text-2xl mt-1"></i><div class="flex-1 w-full overflow-hidden"><h3 class="text-lg font-semibold text-yellow-800 rich-text">${displayJudul}</h3><div class="mt-2 text-sm text-yellow-900 leading-relaxed rich-text">${displayDeskripsi}</div>${mediaHtml}</div></div>`;
+                    }
+                    else if (tipe === 'checklist') {
+                        groupHtml += `<div class="border border-transparent hover:border-gray-200 hover:bg-gray-50 rounded-lg p-3 transition relative group">${adminControls}<label class="flex items-start gap-3 cursor-pointer"><div class="relative flex items-center mt-1"><input type="checkbox" class="checkbox-custom opacity-0 absolute h-0 w-0" data-id="${checkId}" onchange="saveDynamicProgress(this)"><div class="w-5 h-5 border-2 border-gray-300 rounded bg-white flex items-center justify-center transition-colors group-hover:border-blue-500"><svg class="hidden w-3 h-3 text-white pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div></div><div class="flex-1 w-full overflow-hidden"><p class="font-medium text-gray-800 rich-text">${displayJudul}</p><div class="text-sm text-gray-500 mt-1 rich-text break-words">${displayDeskripsi}</div>${mediaHtml}</div></label></div>`;
+                    }
+                    else if (tipe === 'step') {
+                        let iconClass = cleanIcon || 'fas fa-check';
+                        groupHtml += `<div class="flex gap-4 border-b pb-6 mb-4 pt-4 first:pt-0 last:border-0 last:pb-0 relative group">${adminControls}<div class="flex-shrink-0 w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-lg"><i class="${iconClass}"></i></div><div class="flex-1 w-full overflow-hidden"><h4 class="font-semibold text-gray-800 text-lg rich-text">${displayJudul}</h4><div class="text-sm text-gray-600 mt-1 leading-relaxed rich-text break-words">${displayDeskripsi}</div>${mediaHtml}</div></div>`;
+                    }
+                    else if (tipe === 'card') {
+                        let iconClass = cleanIcon || 'fas fa-chevron-right';
+                        if (!iconClass.includes('text-')) iconClass += ' text-gray-400';
+                        groupHtml += `<div class="p-4 border rounded-lg bg-gray-50 w-full overflow-hidden relative group">${adminControls}<h4 class="font-semibold text-gray-800 flex items-center gap-2"><i class="${iconClass}"></i> <span class="rich-text">${displayJudul}</span></h4><div class="text-sm text-gray-600 mt-2 leading-relaxed rich-text break-words">${displayDeskripsi}</div>${mediaHtml}</div>`;
+                    }
+                    else if (tipe === 'kpicard') {
+                        let iconClass = cleanIcon || 'fas fa-star';
+                        if (!iconClass.includes('bg-') && !iconClass.includes('text-')) iconClass += ' bg-gray-100 text-gray-600';
+                        groupHtml += `<div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-center relative group">${adminControls}<div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-xl ${iconClass}"></div><h4 class="text-gray-500 text-sm font-medium rich-text">${displayJudul}</h4><div class="text-lg font-bold text-gray-800 mt-1 rich-text">${displayDeskripsi}</div></div>`;
+                    }
+                });
+
+                if (currentGroup !== '') closeGroup();
+                contentHtml += `</section>`;
+                isFirstTab = false;
+            });
+
+            document.getElementById('sidebar-menu').innerHTML = tabsHtml;
+            document.getElementById('main-content').innerHTML = contentHtml;
+            
+            if (firstTabId) {
+                document.getElementById('page-title').innerHTML = window.dynamicTitlesMap[firstTabId].title;
+                document.getElementById('page-desc').innerHTML = window.dynamicTitlesMap[firstTabId].desc;
+            }
+
+            document.getElementById('loading-indicator').classList.add('hidden');
+            loadDynamicProgress();
+        }
+
+        // --- Navigasi Tab ---
+        function showTab(kategoriId) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-blue-50', 'text-blue-600', 'border-r-4', 'border-blue-600', 'font-medium');
+                el.classList.add('text-gray-600', 'hover:bg-gray-50');
+            });
+            
+            const activeTab = document.getElementById('tab-' + kategoriId);
+            if(activeTab) {
+                activeTab.classList.remove('hidden');
+                activeTab.classList.add('block');
+            }
+            
+            const activeBtn = document.getElementById('btn-tab-' + kategoriId);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-50');
+                activeBtn.classList.add('bg-blue-50', 'text-blue-600', 'border-r-4', 'border-blue-600', 'font-medium');
+            }
+            
+            if(window.dynamicTitlesMap && window.dynamicTitlesMap[kategoriId]) {
+                document.getElementById('page-title').innerHTML = window.dynamicTitlesMap[kategoriId].title;
+                document.getElementById('page-desc').innerHTML = window.dynamicTitlesMap[kategoriId].desc;
+            }
+        }
+        
+        // Menambahkan kembali fungsi penyimpanan progress yang sempat terputus
+        function saveDynamicProgress(checkboxElement) {
+            let state = JSON.parse(localStorage.getItem('sopDynamicDataState')) || {};
+            state[checkboxElement.dataset.id] = checkboxElement.checked;
+            localStorage.setItem('sopDynamicDataState', JSON.stringify(state));
+        }
+
+        function loadDynamicProgress() {
+            let state = JSON.parse(localStorage.getItem('sopDynamicDataState'));
+            if(state) {
+                const checkboxes = document.querySelectorAll('.checkbox-custom');
+                checkboxes.forEach(cb => {
+                    if(state[cb.dataset.id] !== undefined) cb.checked = state[cb.dataset.id];
+                });
+            }
+        }
+
+        function resetChecklists() {
+            if(confirm('Anda yakin ingin mereset semua checklist harian?')) {
+                const checkboxes = document.querySelectorAll('.checkbox-custom');
+                checkboxes.forEach(cb => cb.checked = false);
+                localStorage.removeItem('sopDynamicDataState');
+            }
+        }
+    </script>
+</body>
+</html>
