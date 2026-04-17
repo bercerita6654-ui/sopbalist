@@ -732,7 +732,7 @@
                 let imgSrc = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1920`;
                 return `<div class="mt-4 flex flex-col items-start gap-2 relative z-0">
                             <img src="${imgSrc}" onclick="openModal('${imgSrc}')" class="w-full max-w-[600px] max-h-[600px] object-contain bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition cursor-zoom-in" onerror="handleImageError(this, '${url}')">
-                            <a href="${url}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 mt-1 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition"><i class="fas fa-play-circle"></i> Buka File / Mainkan Video Asli</a>
+                            <a href="${url}" target="_blank" class="hidden inline-flex items-center gap-2 px-4 py-2 mt-1 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition"><i class="fas fa-play-circle"></i> Buka File / Mainkan Video Asli</a>
                         </div>`;
             }
 
