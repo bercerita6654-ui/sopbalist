@@ -105,9 +105,9 @@
         </nav>
 
         <div class="p-4 border-t flex flex-col gap-2">
-            <!-- Tombol Tambah Data (Hanya untuk Server) -->
+            <!-- Tombol Tambah Data Bebas (Hanya untuk Server) -->
             <button id="btn-add-data" onclick="openAddModal()" class="hidden w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center gap-2 text-sm font-bold shadow-md shadow-blue-200 mb-2">
-                <i class="fas fa-plus-circle"></i> Tambah Data SOP
+                <i class="fas fa-plus-circle"></i> Tambah Kategori Baru
             </button>
 
             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
@@ -198,7 +198,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Kategori (Tab ID) *</label>
-                        <input type="text" id="form-kategori" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="contoh: persiapan">
+                        <input type="text" id="form-kategori" required class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium text-blue-700" placeholder="contoh: persiapan">
                         <p class="text-[10px] text-gray-500 mt-1">Nama tab tempat data ini bernaung.</p>
                     </div>
                     <div>
@@ -507,12 +507,19 @@
         }
 
         // --- SISTEM CRUD & API ---
-        function openAddModal() {
+        function openAddModal(prefillKategori = '') {
             document.getElementById('form-action').value = 'add';
             document.getElementById('form-rowindex').value = '';
             document.getElementById('data-form').reset();
             document.getElementById('form-deskripsi').innerHTML = '';
             document.getElementById('form-modal-title').innerText = 'Tambah Data SOP';
+            
+            if (prefillKategori) {
+                document.getElementById('form-kategori').value = prefillKategori;
+                // Kosongkan tipe tab menu jika dia menambah data ke tab yang sudah ada
+                document.getElementById('form-tipe').value = 'checklist';
+            }
+
             document.getElementById('form-modal').classList.remove('hidden');
         }
 
@@ -800,6 +807,18 @@
                 });
 
                 if (currentGroup !== '') closeGroup();
+                
+                // Tombol Tambah Data Ke Kategori Khusus (Hanya muncul jika Role = Server)
+                if (currentUserRole === 'server') {
+                    contentHtml += `
+                        <div class="mt-6 pt-6 border-t border-gray-200 border-dashed flex justify-center">
+                            <button onclick="openAddModal('${kategori}')" class="px-6 py-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors border border-blue-200 border-dashed w-full flex items-center justify-center gap-2 font-medium shadow-sm">
+                                <i class="fas fa-plus-circle"></i> Tambah Data Baru ke "${tabTitle}"
+                            </button>
+                        </div>
+                    `;
+                }
+
                 contentHtml += `</section>`;
                 isFirstTab = false;
             });
