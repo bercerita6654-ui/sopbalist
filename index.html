@@ -134,6 +134,7 @@
                     <h2 class="text-3xl font-bold text-gray-800 rich-text" id="page-title">Loading...</h2>
                     <span id="server-badge" class="hidden px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full border border-purple-200"><i class="fas fa-shield-alt"></i> Edit Mode (Server)</span>
                 </div>
+                <!-- Menggunakan div agar tag HTML internal bisa dibaca bersih -->
                 <div class="text-gray-500 mt-2 rich-text" id="page-desc">Menyiapkan data dari Spreadsheet.</div>
             </div>
             <div class="text-right">
@@ -818,11 +819,11 @@
 
             // 3. Render HTML Sidebar
             const buildMenuBtn = (tabObj, isChild = false) => {
-                let editBtn = currentUserRole === 'server' && tabObj.menuConfig ? `<button onclick="event.stopPropagation(); openEditModal(${tabObj.menuConfig._rowIndex})" class="absolute right-2 opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 bg-white rounded p-1 shadow z-10"><i class="fas fa-pen text-xs"></i></button>` : '';
+                let editBtn = currentUserRole === 'server' && tabObj.menuConfig ? `<button onclick="event.stopPropagation(); openEditModal(${tabObj.menuConfig._rowIndex})" class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 bg-white rounded p-1 shadow z-10"><i class="fas fa-pen text-xs"></i></button>` : '';
                 return `
                     <li>
-                        <button id="btn-tab-${tabObj.domId}" onclick="showTab('${tabObj.domId}')" class="nav-btn w-full text-left py-3 ${isChild ? 'px-10 text-sm' : 'px-6'} text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-3 relative group">
-                            <i class="${tabObj.icon} w-5 text-center"></i> <span class="rich-text truncate pr-6">${tabObj.title}</span>
+                        <button id="btn-tab-${tabObj.domId}" onclick="showTab('${tabObj.domId}')" class="nav-btn w-full text-left py-3 ${isChild ? 'px-10 text-sm' : 'px-6'} text-gray-600 hover:bg-gray-50 transition-colors flex items-start gap-3 relative group">
+                            <i class="${tabObj.icon} w-5 text-center flex-shrink-0 mt-0.5"></i> <span class="rich-text pr-6 break-words leading-snug">${tabObj.title}</span>
                             ${editBtn}
                         </button>
                     </li>
@@ -834,17 +835,17 @@
             Object.values(groupMap).forEach(group => {
                 if (group.items.length === 0) return; 
                 let childrenHtml = group.items.map(tabObj => buildMenuBtn(tabObj, true)).join('');
-                let editGroupBtn = currentUserRole === 'server' && group.config ? `<button onclick="event.stopPropagation(); openEditModal(${group.config._rowIndex})" class="absolute right-8 opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 bg-white rounded p-1 shadow z-10"><i class="fas fa-pen text-xs"></i></button>` : '';
+                let editGroupBtn = currentUserRole === 'server' && group.config ? `<button onclick="event.stopPropagation(); openEditModal(${group.config._rowIndex})" class="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 bg-white rounded p-1 shadow z-10"><i class="fas fa-pen text-xs"></i></button>` : '';
                 let groupDomId = group.id.replace(/[^a-zA-Z0-9_-]/g, '_');
                 
                 tabsHtml += `
                     <li>
-                        <button onclick="toggleGroup('${groupDomId}')" class="w-full text-left px-6 py-3 text-gray-800 font-bold bg-gray-100 border-b border-gray-200 hover:bg-gray-200 transition-colors flex items-center justify-between group relative">
-                            <div class="flex items-center gap-3">
-                                <i class="${group.icon} w-5 text-blue-600 text-center"></i> <span class="truncate pr-8">${group.title}</span>
+                        <button onclick="toggleGroup('${groupDomId}')" class="w-full text-left px-6 py-3 text-gray-800 font-bold bg-gray-100 border-b border-gray-200 hover:bg-gray-200 transition-colors flex items-start justify-between group relative">
+                            <div class="flex items-start gap-3 flex-1 pr-2">
+                                <i class="${group.icon} w-5 text-blue-600 text-center flex-shrink-0 mt-0.5"></i> <span class="break-words leading-snug">${group.title}</span>
                             </div>
                             ${editGroupBtn}
-                            <i id="icon-group-${groupDomId}" class="fas fa-chevron-up text-xs text-gray-500 transition-transform"></i>
+                            <i id="icon-group-${groupDomId}" class="fas fa-chevron-up text-xs text-gray-500 transition-transform mt-1 flex-shrink-0"></i>
                         </button>
                         <ul id="group-${groupDomId}" class="bg-gray-50/50">
                             ${childrenHtml}
@@ -886,12 +887,14 @@
 
                     currentGroup = ['checklist', 'step', 'card', 'kpicard'].includes(tipe) ? tipe : '';
 
+                    // Menerjemahkan data untuk ditampilkan dengan aman
                     let displayJudul = decodeEntities(row.Judul || '');
                     let displayDeskripsi = decodeEntities(row.Deskripsi || '');
                     let checkId = 'check_' + (displayJudul ? displayJudul.replace(/<[^>]*>?/gm, '').replace(/\s+/g, '_').toLowerCase() : Math.random().toString(36).substr(2, 9));
                     let mediaHtml = renderMedia(decodeEntities(row.Media));
                     let cleanIcon = row.Ikon ? decodeEntities(row.Ikon).replace(/<[^>]*>?/gm, '').trim() : '';
 
+                    // Jika deskripsi plain text (tidak ada tag HTML WYSIWYG), tambahkan <br>
                     if (displayDeskripsi && !/<[a-z][\s\S]*>/i.test(displayDeskripsi)) {
                         displayDeskripsi = displayDeskripsi.replace(/\n/g, '<br>');
                     }
