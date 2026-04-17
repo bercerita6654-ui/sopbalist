@@ -538,6 +538,7 @@
             let editDeskripsi = decodeEntities(item.Deskripsi || '');
             
             // Konversi native newline ke <br> khusus untuk plain-text agar terlihat di WYSIWYG
+            // Jangan lakukan ini jika datanya sudah berbentuk tag HTML agar layout tidak rusak
             if(editDeskripsi && !/<[a-z][\s\S]*>/i.test(editDeskripsi)) {
                 editDeskripsi = editDeskripsi.replace(/\n/g, '<br>');
             }
@@ -672,7 +673,7 @@
             let driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
             if (driveMatch && driveMatch[1]) {
                 let driveId = driveMatch[1];
-                let imgSrc = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
+                let imgSrc = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1920`;
                 return `<div class="mt-4 flex flex-col items-start gap-2 relative z-0">
                             <img src="${imgSrc}" onclick="openModal('${imgSrc}')" class="w-full max-w-[600px] max-h-[600px] object-contain bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition cursor-zoom-in" onerror="handleImageError(this, '${url}')">
                             <a href="${url}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 mt-1 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition"><i class="fas fa-play-circle"></i> Buka File / Mainkan Video Asli</a>
