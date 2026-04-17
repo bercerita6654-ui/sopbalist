@@ -46,6 +46,14 @@
             pointer-events: none;
             display: block;
         }
+
+        /* Image Zoom Drag Styling */
+        #image-container { cursor: grab; }
+        #image-container:active { cursor: grabbing; }
+        #modal-img {
+            transition: transform 0.15s ease-out;
+            transform-origin: center;
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden relative">
@@ -145,10 +153,26 @@
 
     </main>
 
-    <!-- Modal untuk Zoom Gambar -->
-    <div id="image-modal" class="fixed inset-0 z-[100] hidden bg-black bg-opacity-90 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity" onclick="closeModal()">
-        <span class="absolute top-6 right-8 text-white text-4xl font-bold cursor-pointer hover:text-gray-300 transition-colors">&times;</span>
-        <img id="modal-img" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl cursor-zoom-out" src="" alt="Zoomed Image">
+    <!-- Modal untuk Zoom & Panning Gambar -->
+    <div id="image-modal" class="fixed inset-0 z-[100] hidden bg-black bg-opacity-95 flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <!-- Control Bar -->
+        <div class="absolute top-4 right-6 flex gap-3 z-[110] bg-gray-900 bg-opacity-50 p-2 rounded-full backdrop-blur-md border border-gray-700">
+            <button onclick="zoomImage(0.25)" class="text-white hover:text-blue-400 w-10 h-10 rounded-full flex items-center justify-center transition" title="Zoom In (Scroll Up)"><i class="fas fa-search-plus text-xl"></i></button>
+            <button onclick="zoomImage(-0.25)" class="text-white hover:text-blue-400 w-10 h-10 rounded-full flex items-center justify-center transition" title="Zoom Out (Scroll Down)"><i class="fas fa-search-minus text-xl"></i></button>
+            <button onclick="resetZoom()" class="text-white hover:text-blue-400 w-10 h-10 rounded-full flex items-center justify-center transition" title="Reset Posisi & Zoom"><i class="fas fa-sync-alt text-xl"></i></button>
+            <div class="w-px h-6 bg-gray-600 my-auto mx-1"></div>
+            <button onclick="closeModal()" class="text-white hover:text-red-400 w-10 h-10 rounded-full flex items-center justify-center transition" title="Tutup Modal"><i class="fas fa-times text-2xl font-bold"></i></button>
+        </div>
+
+        <!-- Instruksi Layar -->
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-[110] bg-gray-900 bg-opacity-60 text-white text-xs px-4 py-2 rounded-full backdrop-blur-md pointer-events-none tracking-wide text-center">
+            <i class="fas fa-mouse pointer-events-none mr-1"></i> Scroll untuk Zoom | Tarik (Drag) untuk Geser Gambar
+        </div>
+
+        <!-- Image Container -->
+        <div id="image-container" class="w-full h-full flex items-center justify-center overflow-hidden">
+            <img id="modal-img" class="max-w-none shadow-2xl select-none" style="max-height: 90vh;" src="" alt="Zoomed Image" draggable="false">
+        </div>
     </div>
 
     <!-- Modal Form (Tambah/Edit) -->
@@ -383,16 +407,98 @@
             document.getElementById('form-deskripsi').focus();
         }
         
-        // --- FUNGSI MODAL ZOOM GAMBAR ---
+        // --- FUNGSI MODAL ZOOM & PANNING GAMBAR ---
+        let imgScale = 1;
+        let isPanning = false;
+        let startX = 0, startY = 0;
+        let translateX = 0, translateY = 0;
+        const modalImg = document.getElementById('modal-img');
+        const imgContainer = document.getElementById('image-container');
+
         function openModal(src) {
-            document.getElementById('modal-img').src = src;
+            modalImg.src = src;
             document.getElementById('image-modal').classList.remove('hidden');
+            resetZoom();
         }
 
         function closeModal() {
             document.getElementById('image-modal').classList.add('hidden');
-            setTimeout(() => { document.getElementById('modal-img').src = ''; }, 300);
+            setTimeout(() => { modalImg.src = ''; }, 300);
         }
+
+        function applyImageTransform() {
+            modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${imgScale})`;
+        }
+
+        function zoomImage(delta) {
+            imgScale += delta;
+            if (imgScale < 0.5) imgScale = 0.5; // Zoom out maksimal
+            if (imgScale > 5) imgScale = 5;     // Zoom in maksimal
+            applyImageTransform();
+        }
+
+        function resetZoom() {
+            imgScale = 1;
+            translateX = 0;
+            translateY = 0;
+            applyImageTransform();
+        }
+
+        // Logika Panning (Geser dengan Mouse)
+        imgContainer.addEventListener('mousedown', (e) => {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') {
+                e.preventDefault();
+                isPanning = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isPanning = false;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            e.preventDefault();
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            applyImageTransform();
+        });
+
+        // Logika Panning (Geser dengan Sentuhan Mobile)
+        imgContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1 && e.target.tagName !== 'BUTTON') {
+                isPanning = true;
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+            }
+        }, {passive: false});
+
+        window.addEventListener('touchend', () => {
+            isPanning = false;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isPanning) return;
+            e.preventDefault();
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            applyImageTransform();
+        }, {passive: false});
+
+        // Logika Zoom dengan Mouse Scroll (Wheel)
+        imgContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 0.15 : -0.15;
+            zoomImage(delta);
+        }, {passive: false});
+
+        // Menutup modal jika area kosong ditekan (bukan gambar atau tombol)
+        imgContainer.addEventListener('click', (e) => {
+            if(e.target === imgContainer) closeModal();
+        });
+
 
         function handleImageError(imgEl, originalUrl) {
             const parent = imgEl.parentElement;
@@ -432,7 +538,6 @@
             let editDeskripsi = decodeEntities(item.Deskripsi || '');
             
             // Konversi native newline ke <br> khusus untuk plain-text agar terlihat di WYSIWYG
-            // Jangan lakukan ini jika datanya sudah berbentuk tag HTML agar layout tidak rusak
             if(editDeskripsi && !/<[a-z][\s\S]*>/i.test(editDeskripsi)) {
                 editDeskripsi = editDeskripsi.replace(/\n/g, '<br>');
             }
