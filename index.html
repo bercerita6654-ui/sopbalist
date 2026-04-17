@@ -297,24 +297,42 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Ikon (FontAwesome)</label>
-                        <input type="text" id="form-ikon" list="icon-suggestions" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="fas fa-box text-blue-500">
-                        <datalist id="icon-suggestions">
-                            <option value="fas fa-database text-blue-500">
-                            <option value="fas fa-box text-orange-500">
-                            <option value="fas fa-sun text-yellow-500">
-                            <option value="fas fa-headset text-green-500">
-                            <option value="fas fa-chart-line text-purple-500">
-                            <option value="fas fa-check-circle text-green-500">
-                            <option value="fas fa-exclamation-triangle text-red-500">
-                            <option value="fas fa-users text-blue-500">
-                            <option value="fas fa-folder text-gray-500">
-                            <option value="fas fa-file-alt text-blue-400">
-                            <option value="fas fa-truck text-green-600">
-                            <option value="fas fa-star text-yellow-400">
-                            <option value="fas fa-shopping-cart text-pink-500">
-                            <option value="fas fa-wallet text-green-600">
-                        </datalist>
-                        <p class="text-[10px] text-gray-500 mt-1">Cari/ketik ikon. Cth: fas fa-database, fas fa-truck, fas fa-users</p>
+                        <div class="flex gap-2 mb-2">
+                            <div class="w-12 h-11 border border-gray-300 rounded-lg bg-white flex items-center justify-center text-xl shadow-sm flex-shrink-0" id="icon-preview">
+                                <i class="fas fa-image text-gray-300"></i>
+                            </div>
+                            <input type="text" id="form-ikon" class="flex-1 p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="fas fa-box text-blue-500" oninput="updateIconPreview()">
+                        </div>
+                        
+                        <!-- Pilihan Ikon Cepat (Visual) -->
+                        <div class="grid grid-cols-7 sm:grid-cols-9 gap-2 p-2 border border-gray-200 rounded-lg bg-gray-50 max-h-32 overflow-y-auto mt-2">
+                            <button type="button" onclick="selectIcon('fas fa-database text-blue-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Database"><i class="fas fa-database text-blue-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-box text-orange-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Box"><i class="fas fa-box text-orange-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-box-open text-amber-600')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Box Open"><i class="fas fa-box-open text-amber-600"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-sun text-yellow-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Pagi/Sun"><i class="fas fa-sun text-yellow-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-headset text-green-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="CS/Headset"><i class="fas fa-headset text-green-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-chart-line text-purple-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Grafik"><i class="fas fa-chart-line text-purple-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-check-circle text-green-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Centang"><i class="fas fa-check-circle text-green-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-exclamation-triangle text-red-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Peringatan"><i class="fas fa-exclamation-triangle text-red-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-users text-blue-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Users"><i class="fas fa-users text-blue-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-user text-blue-400')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="User"><i class="fas fa-user text-blue-400"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-folder text-gray-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Folder"><i class="fas fa-folder text-gray-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-file-alt text-blue-400')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="File"><i class="fas fa-file-alt text-blue-400"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-truck text-green-600')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Truk Pengiriman"><i class="fas fa-truck text-green-600"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-bicycle text-blue-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Sepeda"><i class="fas fa-bicycle text-blue-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-motorcycle text-red-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Motor"><i class="fas fa-motorcycle text-red-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-store text-indigo-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Toko"><i class="fas fa-store text-indigo-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-shopping-cart text-pink-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Keranjang"><i class="fas fa-shopping-cart text-pink-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-money-bill-wave text-green-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Uang"><i class="fas fa-money-bill-wave text-green-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-wallet text-emerald-600')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Dompet"><i class="fas fa-wallet text-emerald-600"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-star text-yellow-400')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Bintang"><i class="fas fa-star text-yellow-400"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-cog text-gray-600')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Pengaturan"><i class="fas fa-cog text-gray-600"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-clipboard-list text-teal-600')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Papan Ujian"><i class="fas fa-clipboard-list text-teal-600"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-comments text-green-400')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Chat/Komentar"><i class="fas fa-comments text-green-400"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-bullhorn text-orange-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Pengumuman"><i class="fas fa-bullhorn text-orange-500"></i></button>
+                            <button type="button" onclick="selectIcon('fas fa-envelope text-blue-500')" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 transition shadow-sm bg-white border border-gray-200" title="Pesan/Surat"><i class="fas fa-envelope text-blue-500"></i></button>
+                        </div>
+                        <p class="text-[10px] text-gray-500 mt-1">Klik ikon di atas atau ketik manual (cth: fas fa-database).</p>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Link Media (Drive/YT/Gambar)</label>
@@ -542,6 +560,19 @@
             }
         }
 
+        // Fungsi Pemilih Ikon Visual
+        function selectIcon(iconCode) {
+            document.getElementById('form-ikon').value = iconCode;
+            updateIconPreview();
+        }
+
+        function updateIconPreview() {
+            let val = document.getElementById('form-ikon').value;
+            val = val.replace(/<[^>]*>?/gm, '').trim(); // Hindari injeksi tag
+            if (!val) val = 'fas fa-image text-gray-300';
+            document.getElementById('icon-preview').innerHTML = `<i class="${val}"></i>`;
+        }
+
         const stripHtmlLocal = (html) => {
             let tmp = document.createElement("DIV");
             tmp.innerHTML = html;
@@ -557,6 +588,7 @@
             document.getElementById('form-modal-title').innerText = 'Tambah Data SOP';
             
             populateGroupSelect();
+            updateIconPreview(); // Reset preview ikon
             
             if (prefillKategoriLengkap) {
                 let parts = prefillKategoriLengkap.split('::');
@@ -607,6 +639,8 @@
             document.getElementById('form-deskripsi').innerHTML = editDeskripsi;
             
             document.getElementById('form-ikon').value = stripHtmlLocal(decodeEntities(item.Ikon || ''));
+            updateIconPreview(); // Perbarui tampilan kotak preview ikon
+
             document.getElementById('form-media').value = stripHtmlLocal(decodeEntities(item.Media || ''));
 
             handleTipeChange();
