@@ -297,7 +297,24 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Ikon (FontAwesome)</label>
-                        <input type="text" id="form-ikon" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="fas fa-box text-blue-500">
+                        <input type="text" id="form-ikon" list="icon-suggestions" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="fas fa-box text-blue-500">
+                        <datalist id="icon-suggestions">
+                            <option value="fas fa-database text-blue-500">
+                            <option value="fas fa-box text-orange-500">
+                            <option value="fas fa-sun text-yellow-500">
+                            <option value="fas fa-headset text-green-500">
+                            <option value="fas fa-chart-line text-purple-500">
+                            <option value="fas fa-check-circle text-green-500">
+                            <option value="fas fa-exclamation-triangle text-red-500">
+                            <option value="fas fa-users text-blue-500">
+                            <option value="fas fa-folder text-gray-500">
+                            <option value="fas fa-file-alt text-blue-400">
+                            <option value="fas fa-truck text-green-600">
+                            <option value="fas fa-star text-yellow-400">
+                            <option value="fas fa-shopping-cart text-pink-500">
+                            <option value="fas fa-wallet text-green-600">
+                        </datalist>
+                        <p class="text-[10px] text-gray-500 mt-1">Cari/ketik ikon. Cth: fas fa-database, fas fa-truck, fas fa-users</p>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Link Media (Drive/YT/Gambar)</label>
